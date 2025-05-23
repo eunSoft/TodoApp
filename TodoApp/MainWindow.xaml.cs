@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Windows;
+using System.Windows.Controls;
 using TodoApp.Models;
 using TodoApp.Services;
 
@@ -18,9 +19,20 @@ namespace TodoApp
         private void AddTodo_Click(object sender, RoutedEventArgs e)
         {
             string content = txtContent.Text.Trim();
-            string deadline = dpDeadline.SelectedDate?.ToString("yyyy-MM-dd") ?? "";
+            var selectedDate = dpDeadline.SelectedDate;
 
-            if (string.IsNullOrEmpty(content)) return;
+            if (string.IsNullOrEmpty(content))
+            {
+                MessageBox.Show("할 일을 입력해주세요!", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (selectedDate == null)
+            {
+                MessageBox.Show("날짜를 선택해주세요!", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+            string deadline = selectedDate.Value.ToString("yyyy-mm-dd");
 
             using (var conn = DatabaseHelper.GetConnection())
             {
@@ -58,6 +70,23 @@ namespace TodoApp
                     }
                 }
             }
+        }
+
+        private void DeleteTodo_Click(object sender, RoutedEventArgs e)
+        {
+            int selectedIndex = lstTodos.SelectedIndex;
+            if (selectedIndex == -1) return;
+            using (var conn = DatabaseHelper.GetConnection())
+            {
+                conn.Open();
+                string sql = "DELETE FROM todos WHERE rowid = (SELECT id FROM todos ORDER BY id DESC LIMIT 1 OFFSET @offset)";
+                using (var cmd = new SQLiteCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@offset", selectedIndex);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            LoadTodos();
         }
     }
 }

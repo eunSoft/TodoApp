@@ -6,7 +6,8 @@
         <TextBox x:Name="txtContent" Height="25" Margin="0,0,0,10" />
         <TextBlock Text="할 일을 입력하세요" Margin="0,0,0,3"/>
         <DatePicker x:Name="dpDeadline" Margin="0,0,0,10"/>  
-        <Button Content="추가" Click="AddTodo_Click" Height="30" Margin="0,0,0,10"/>  
-        <ListBox x:Name="lstTodos" Height="250" />  
-    </StackPanel>  
+        <Button Content="추가" Click="AddTodo_Click" Height="30" Margin="0,0,0,10"/>
+        <Button Content="삭제" Click="DeleteTodo_Click" Height="30" Margin="0,0,0,10"/>
+        <ListBox x:Name="lstTodos" Height="250" />
+        </StackPanel>  
 </Window>
