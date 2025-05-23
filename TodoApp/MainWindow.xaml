@@ -1,13 +1,28 @@
 ﻿<Window x:Class="TodoApp.MainWindow"  
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"  
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"  
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         Title="정은의 Todo 앱" Height="400" Width="400">  
     <StackPanel Margin="10">  
         <TextBox x:Name="txtContent" Height="25" Margin="0,0,0,10" />
         <TextBlock Text="할 일을 입력하세요" Margin="0,0,0,3"/>
         <DatePicker x:Name="dpDeadline" Margin="0,0,0,10"/>
         <Button Content="추가" Click="AddTodo_Click" Height="30" Margin="0,0,0,10"/>
+        <CheckBox x:Name="chkShowCompleted" Content="완료된 항목도 보기" 
+          Margin="0,0,0,10" Checked="FilterChanged" Unchecked="FilterChanged"/>
         <ListView x:Name="lstTodos" Height="300" Margin="0,0,0,10">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsOverdue}" Value="True">
+                            <Setter Property="Foreground" Value="Red"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Deadline}" Value="{x:Null}">
+                            <Setter Property="Foreground" Value="Black"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="완료" Width="60">

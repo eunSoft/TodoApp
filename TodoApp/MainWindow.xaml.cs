@@ -61,7 +61,11 @@ namespace TodoApp
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                string sql = "SELECT id, content, is_done, deadline FROM todos ORDER BY id DESC";
+                bool showCompleted = chkShowCompleted.IsChecked == true; //체크박스가 선택되었는지 여부
+
+                string sql = showCompleted ? 
+                    "SELECT id, content, is_done, deadline FROM todos ORDER BY id DESC"
+                    : "SELECT id, content, is_done, deadline FROM todos WHERE is_done = 0 ORDER BY id DESC";
                 using (var cmd = new SQLiteCommand(sql, conn))
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -99,6 +103,11 @@ namespace TodoApp
 
                 LoadTodos();
             }
+        }
+        private void FilterChanged(object sender, RoutedEventArgs e)
+        {
+            //체크박스를 켜거나 끌 때마다 리스트를 다시 불러오기
+            LoadTodos();
         }
 
         private void Todo_Checked(object sender, RoutedEventArgs e) => ToggleDone(sender, true);
