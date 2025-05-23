@@ -32,7 +32,7 @@ namespace TodoApp
                 MessageBox.Show("날짜를 선택해주세요!", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
-            string deadline = selectedDate.Value.ToString("yyyy-mm-dd");
+            string deadline = selectedDate.Value.ToString("yyyy-MM-dd");
 
             using (var conn = DatabaseHelper.GetConnection())
             {
