@@ -5,9 +5,30 @@
     <StackPanel Margin="10">  
         <TextBox x:Name="txtContent" Height="25" Margin="0,0,0,10" />
         <TextBlock Text="할 일을 입력하세요" Margin="0,0,0,3"/>
-        <DatePicker x:Name="dpDeadline" Margin="0,0,0,10"/>  
+        <DatePicker x:Name="dpDeadline" Margin="0,0,0,10"/>
         <Button Content="추가" Click="AddTodo_Click" Height="30" Margin="0,0,0,10"/>
-        <Button Content="삭제" Click="DeleteTodo_Click" Height="30" Margin="0,0,0,10"/>
-        <ListBox x:Name="lstTodos" Height="250" />
-        </StackPanel>  
+        <ListView x:Name="lstTodos" Height="300" Margin="0,0,0,10">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="완료" Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding IsDone, Mode=TwoWay}" Checked="Todo_Checked" Unchecked="Todo_Unchecked"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="할 일" Width="150" DisplayMemberBinding="{Binding Content}" />
+                    <GridViewColumn Header="기한" Width="100" DisplayMemberBinding="{Binding DeadlineDisplay}" />
+                    <GridViewColumn Header="삭제" Width="60">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="🗑" Click="DeleteButton_Click"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+    </StackPanel>  
 </Window>

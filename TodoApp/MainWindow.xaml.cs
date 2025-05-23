@@ -10,6 +10,8 @@ namespace TodoApp
 {
     public partial class MainWindow : Window
     {
+        private List<Todo> todos = new();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -32,6 +34,7 @@ namespace TodoApp
                 MessageBox.Show("날짜를 선택해주세요!", "입력 오류", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
             string deadline = selectedDate.Value.ToString("yyyy-MM-dd");
 
             using (var conn = DatabaseHelper.GetConnection())
@@ -52,41 +55,75 @@ namespace TodoApp
         }
 
         private void LoadTodos()
-        {
-            lstTodos.Items.Clear();
+        {   //db에서 할일 목록 가져오기
+            todos.Clear();
 
             using (var conn = DatabaseHelper.GetConnection())
             {
                 conn.Open();
-                string sql = "SELECT id, content, is_done, deadline FROM todos WHERE is_done = 0 ORDER BY id DESC";
+                string sql = "SELECT id, content, is_done, deadline FROM todos ORDER BY id DESC";
                 using (var cmd = new SQLiteCommand(sql, conn))
                 using (var reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
-                        string content = reader["content"].ToString();
-                        string deadline = reader["deadline"].ToString();
-                        lstTodos.Items.Add($"{content} {(string.IsNullOrEmpty(deadline) ? "" : $"(~{deadline})")}");
+                        todos.Add(new Todo
+                        {
+                            Id = Convert.ToInt32(reader["id"]),
+                            Content = reader["content"].ToString()!,
+                            IsDone = Convert.ToInt32(reader["is_done"]) == 1,
+                            Deadline = DateTime.TryParse(reader["deadline"].ToString(), out var d) ? d : null
+                        });
                     }
                 }
             }
+
+            lstTodos.ItemsSource = null;
+            lstTodos.ItemsSource = todos;
         }
 
-        private void DeleteTodo_Click(object sender, RoutedEventArgs e)
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
-            int selectedIndex = lstTodos.SelectedIndex;
-            if (selectedIndex == -1) return;
-            using (var conn = DatabaseHelper.GetConnection())
+            if (sender is Button btn && btn.DataContext is Todo todo)
             {
-                conn.Open();
-                string sql = "DELETE FROM todos WHERE rowid = (SELECT id FROM todos ORDER BY id DESC LIMIT 1 OFFSET @offset)";
-                using (var cmd = new SQLiteCommand(sql, conn))
+                using (var conn = DatabaseHelper.GetConnection())
                 {
-                    cmd.Parameters.AddWithValue("@offset", selectedIndex);
-                    cmd.ExecuteNonQuery();
+                    conn.Open();
+                    string sql = "DELETE FROM todos WHERE id = @id";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@id", todo.Id);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
+
+                LoadTodos();
             }
-            LoadTodos();
+        }
+
+        private void Todo_Checked(object sender, RoutedEventArgs e) => ToggleDone(sender, true);
+        private void Todo_Unchecked(object sender, RoutedEventArgs e) => ToggleDone(sender, false);
+
+        private void ToggleDone(object sender, bool done)
+        {
+            if (sender is CheckBox chk && chk.DataContext is Todo todo)
+            {
+                using (var conn = DatabaseHelper.GetConnection())
+                {
+                    conn.Open();
+                    string sql = "UPDATE todos SET is_done = @done WHERE id = @id";
+                    using (var cmd = new SQLiteCommand(sql, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@done", done ? 1 : 0);
+                        cmd.Parameters.AddWithValue("@id", todo.Id);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                LoadTodos();
+            }
         }
     }
 }
+
+
